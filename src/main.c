@@ -191,6 +191,7 @@ int main() {
   APP_LOG(APP_LOG_LEVEL_INFO, "Clock With Marks Started!");
   APP_LOG(APP_LOG_LEVEL_ERROR, "Example Error!");
   APP_LOG(APP_LOG_LEVEL_INFO, "===========================");
+  
   init();
   app_event_loop();
   deinit();
