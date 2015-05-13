@@ -5,14 +5,14 @@
     "capabilities": [
         ""
     ],
-    "companyName": "Chris Lewis",
-    "longName": "KS Original",
+    "companyName": "Golden Compass",
+    "longName": "Watch with marks - Integrated with time line",
     "projectType": "native",
     "resources": {
         "media": []
     },
     "sdkVersion": "3",
-    "shortName": "KS Original",
+    "shortName": "Watch with marks",
     "targetPlatforms": [
         "basalt"
     ],
