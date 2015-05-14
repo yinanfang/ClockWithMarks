@@ -155,6 +155,55 @@ static void hands_update(Animation *anim, AnimationProgress dist_normalized) {
   layer_mark_dirty(s_canvas_layer);
 }
 
+#define Code_Hour       101
+#define Code_Minute     102
+  
+static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
+  APP_LOG(APP_LOG_LEVEL_INFO, "In Callback inbox_received_callback"); 
+  
+  // Store incoming information
+  static char hour_buffer[8];
+  static char minute_buffer[32];
+  static char weather_layer_buffer[32];
+  
+  // Read first item
+  Tuple *t = dict_read_first(iterator);
+
+  // For all items
+  while(t != NULL) {
+    APP_LOG(APP_LOG_LEVEL_INFO, "In interation!!"); 
+    // Which key was received?
+    switch(t->key) {
+    case Code_Hour:
+      snprintf(hour_buffer, sizeof(hour_buffer), "%dC hour", (int)t->value->int32);
+      APP_LOG(APP_LOG_LEVEL_INFO, "Clock With Marks Started!");
+      break;
+    case Code_Minute:
+      snprintf(hour_buffer, sizeof(minute_buffer), "%dC min", (int)t->value->int32);
+      APP_LOG(APP_LOG_LEVEL_INFO, "Clock With Marks Started!");      
+      break;
+    default:
+      APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
+      break;
+    }
+    // Look for next item
+    t = dict_read_next(iterator);
+  }
+
+}
+
+static void inbox_dropped_callback(AppMessageResult reason, void *context) {
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped!");
+}
+
+static void outbox_failed_callback(DictionaryIterator *iterator, AppMessageResult reason, void *context) {
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox send failed!");
+}
+
+static void outbox_sent_callback(DictionaryIterator *iterator, void *context) {
+  APP_LOG(APP_LOG_LEVEL_INFO, "Outbox send success!");
+}
+
 static void init() {
   srand(time(NULL));
 
@@ -169,6 +218,7 @@ static void init() {
   });
   window_stack_push(s_main_window, true);
 
+  //tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
 
   // Prepare animations
@@ -181,6 +231,15 @@ static void init() {
     .update = hands_update
   };
   animate(2 * ANIMATION_DURATION, ANIMATION_DELAY, &hands_impl, true);
+  
+  // Register callbacks
+  app_message_register_inbox_received(inbox_received_callback);
+  app_message_register_inbox_dropped(inbox_dropped_callback);
+  app_message_register_outbox_failed(outbox_failed_callback);
+  app_message_register_outbox_sent(outbox_sent_callback);
+  
+  // Open AppMessage
+  app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
 }
 
 static void deinit() {

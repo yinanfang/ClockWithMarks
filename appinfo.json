@@ -5,20 +5,20 @@
     "capabilities": [
         ""
     ],
-    "companyName": "Golden Compass",
-    "longName": "Watch with marks - Integrated with time line",
+    "companyName": "Lucas Fang",
+    "longName": "GC Original",
     "projectType": "native",
     "resources": {
         "media": []
     },
     "sdkVersion": "3",
-    "shortName": "Watch with marks",
+    "shortName": "GC Original",
     "targetPlatforms": [
         "basalt"
     ],
     "uuid": "25becbb7-c0bc-4180-82b6-b36f1bf894c7",
     "versionLabel": "1.0",
     "watchapp": {
-        "watchface": true
+        "watchface": false
     }
 }
