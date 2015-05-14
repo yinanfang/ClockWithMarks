@@ -22,6 +22,11 @@ static Time s_last_time, s_anim_time;
 static int s_radius = 0, s_anim_hours_60 = 0, s_color_channels[3];
 static bool s_animating = false;
 
+// Time object array for max 200
+Time eventArray[200];
+static int currectCount = 0;
+static int totalCount = 0;
+
 /*************************** AnimationImplementation **************************/
 
 static void animation_started(Animation *anim, void *context) {
@@ -119,6 +124,15 @@ static void update_proc(Layer *layer, GContext *ctx) {
   if(s_radius > HAND_MARGIN) {
     graphics_draw_line(ctx, s_center, minute_hand);
   }
+  
+  // Draw events 
+  for (int index = 0; index < totalCount; index++) {
+    APP_LOG(APP_LOG_LEVEL_INFO, "Drawing event #%d", index); 
+    
+    
+    
+    currectCount++;
+  }
 }
 
 static void window_load(Window *window) {
@@ -155,8 +169,11 @@ static void hands_update(Animation *anim, AnimationProgress dist_normalized) {
   layer_mark_dirty(s_canvas_layer);
 }
 
+#define Code_Reset      0
 #define Code_Hour       101
 #define Code_Minute     102
+#define Code_End        999
+
   
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
   APP_LOG(APP_LOG_LEVEL_INFO, "In Callback inbox_received_callback"); 
@@ -167,23 +184,42 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
   
   // Read first item
   Tuple *t = dict_read_first(iterator);
-
+  Time event;
+  
   // For all items
   while(t != NULL) {
     // Which key was received?
     switch(t->key) {
-    case Code_Hour:
-      snprintf(hour_buffer, sizeof(hour_buffer), "%dC hour", (int)t->value->int32);
-      APP_LOG(APP_LOG_LEVEL_INFO, "%s", hour_buffer);
-      break;
-    case Code_Minute:
-      snprintf(minute_buffer, sizeof(minute_buffer), "%dC min", (int)t->value->int32);
-      APP_LOG(APP_LOG_LEVEL_INFO, "%s", minute_buffer);      
-      break;
-    default:
-      APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
-      break;
+      case Code_Reset:
+        APP_LOG(APP_LOG_LEVEL_INFO, "Reset currectCount");
+        currectCount = 0;
+        totalCount = 0;
+        break;
+      case Code_Hour:
+        event.hours = (int)t->value->int32;
+        snprintf(hour_buffer, sizeof(hour_buffer), "%d hour", event.hours);
+        APP_LOG(APP_LOG_LEVEL_INFO, "%s", hour_buffer);
+        break;
+      case Code_Minute:
+        event.minutes = (int)t->value->int32;
+        snprintf(minute_buffer, sizeof(minute_buffer), "%d min", event.minutes);
+        APP_LOG(APP_LOG_LEVEL_INFO, "%s", minute_buffer);      
+        break;
+      case Code_End:
+        APP_LOG(APP_LOG_LEVEL_INFO, "Got all event info!");
+        // Redraw
+        if(s_canvas_layer) {
+          layer_mark_dirty(s_canvas_layer);
+        }
+        break;
+      default:
+        APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
+        break;
     }
+    eventArray[totalCount] = event;
+    totalCount++;
+    APP_LOG(APP_LOG_LEVEL_INFO, "Added event object #%d", totalCount);
+    
     // Look for next item
     t = dict_read_next(iterator);
   }
