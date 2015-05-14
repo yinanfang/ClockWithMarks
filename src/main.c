@@ -164,23 +164,21 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
   // Store incoming information
   static char hour_buffer[8];
   static char minute_buffer[32];
-  static char weather_layer_buffer[32];
   
   // Read first item
   Tuple *t = dict_read_first(iterator);
 
   // For all items
   while(t != NULL) {
-    APP_LOG(APP_LOG_LEVEL_INFO, "In interation!!"); 
     // Which key was received?
     switch(t->key) {
     case Code_Hour:
       snprintf(hour_buffer, sizeof(hour_buffer), "%dC hour", (int)t->value->int32);
-      APP_LOG(APP_LOG_LEVEL_INFO, "Clock With Marks Started!");
+      APP_LOG(APP_LOG_LEVEL_INFO, "%s", hour_buffer);
       break;
     case Code_Minute:
-      snprintf(hour_buffer, sizeof(minute_buffer), "%dC min", (int)t->value->int32);
-      APP_LOG(APP_LOG_LEVEL_INFO, "Clock With Marks Started!");      
+      snprintf(minute_buffer, sizeof(minute_buffer), "%dC min", (int)t->value->int32);
+      APP_LOG(APP_LOG_LEVEL_INFO, "%s", minute_buffer);      
       break;
     default:
       APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
@@ -248,7 +246,7 @@ static void deinit() {
 
 int main() {
   APP_LOG(APP_LOG_LEVEL_INFO, "Clock With Marks Started!");
-  APP_LOG(APP_LOG_LEVEL_ERROR, "Example Error!");
+  // APP_LOG(APP_LOG_LEVEL_ERROR, "Example Error!");
   APP_LOG(APP_LOG_LEVEL_INFO, "===========================");
   
   init();
