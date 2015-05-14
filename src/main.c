@@ -131,6 +131,8 @@ static void update_proc(Layer *layer, GContext *ctx) {
     
     
     
+    
+    
     currectCount++;
   }
 }
@@ -185,12 +187,14 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
   // Read first item
   Tuple *t = dict_read_first(iterator);
   Time event;
+  bool isEventObject = true;
   
   // For all items
   while(t != NULL) {
     // Which key was received?
     switch(t->key) {
-      case Code_Reset:
+      case Code_Reset:        
+        isEventObject = false;
         APP_LOG(APP_LOG_LEVEL_INFO, "Reset currectCount");
         currectCount = 0;
         totalCount = 0;
@@ -206,6 +210,7 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
         APP_LOG(APP_LOG_LEVEL_INFO, "%s", minute_buffer);      
         break;
       case Code_End:
+        isEventObject = false;
         APP_LOG(APP_LOG_LEVEL_INFO, "Got all event info!");
         // Redraw
         if(s_canvas_layer) {
@@ -216,14 +221,17 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
         APP_LOG(APP_LOG_LEVEL_ERROR, "Key %d not recognized!", (int)t->key);
         break;
     }
-    eventArray[totalCount] = event;
-    totalCount++;
-    APP_LOG(APP_LOG_LEVEL_INFO, "Added event object #%d", totalCount);
     
     // Look for next item
     t = dict_read_next(iterator);
   }
-
+  
+  // Add event object
+  if (isEventObject) {
+    eventArray[totalCount] = event;
+    totalCount++;
+    APP_LOG(APP_LOG_LEVEL_INFO, "Added event object #%d", totalCount);
+  }
 }
 
 static void inbox_dropped_callback(AppMessageResult reason, void *context) {
