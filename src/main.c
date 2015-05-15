@@ -137,25 +137,33 @@ static void update_proc(Layer *layer, GContext *ctx) {
 
     // Get angle of event on clock
     int theta = eventArray[index].hours*360/12 + eventArray[index].minutes*360/60/12;
-    APP_LOG(APP_LOG_LEVEL_INFO, "theta = %d", theta);
+//     APP_LOG(APP_LOG_LEVEL_INFO, "-->theta = %d; s_radius = %d;, s_center.x = %d, s_center.y = %d, TRIG_MAX_RATIO = %d", theta, s_radius, s_center.x, s_center.y, TRIG_MAX_RATIO);
+//     APP_LOG(APP_LOG_LEVEL_INFO, "=====");
+//     APP_LOG(APP_LOG_LEVEL_INFO, "-->sin_lookup(theta) = %d", (int)sin_lookup(theta));
+//     APP_LOG(APP_LOG_LEVEL_INFO, "-->s_radius*sin_lookup(theta) = %d", (int)(s_radius*sin_lookup(theta)/ TRIG_MAX_RATIO));
+//     APP_LOG(APP_LOG_LEVEL_INFO, "-->s_center.x + s_radius*sin_lookup(theta) = %d", (int)(s_center.x + s_radius*sin_lookup(theta)/ TRIG_MAX_RATIO));
+//     APP_LOG(APP_LOG_LEVEL_INFO, "=====");
+//     APP_LOG(APP_LOG_LEVEL_INFO, "-->cos_lookup(theta) = %d", (int)cos_lookup(theta));
+//     APP_LOG(APP_LOG_LEVEL_INFO, "-->s_radius*cos_lookup(theta) = %d", (int)(s_radius*cos_lookup(theta)/ TRIG_MAX_RATIO));
+//     APP_LOG(APP_LOG_LEVEL_INFO, "-->s_center.x + s_radius*cos_lookup(theta) = %d", (int)(s_center.x + s_radius*cos_lookup(theta)/ TRIG_MAX_RATIO));
+//     APP_LOG(APP_LOG_LEVEL_INFO, "=====");
+//     int cor_x = (int)(s_center.x + s_radius*sin_lookup(theta)/ TRIG_MAX_RATIO);
+//     int cor_y = (int)(s_center.y + s_radius*cos_lookup(theta)/ TRIG_MAX_RATIO);
+    
+    GPoint secondHand;
+    GPoint center = s_center;
+    int32_t secondHandLength = s_radius;
+    int32_t second_angle = eventArray[index].hours*TRIG_MAX_ANGLE/12 + eventArray[index].minutes*TRIG_MAX_ANGLE/60/12;
+      
+//       TRIG_MAX_ANGLE * t.tm_sec / 60;
+    secondHand.y = (-cos_lookup(second_angle) * secondHandLength / TRIG_MAX_RATIO) + center.y - IconSize/2;
+    secondHand.x = (sin_lookup(second_angle) * secondHandLength / TRIG_MAX_RATIO) + center.x - IconSize/2;
 
-//     APP_LOG(APP_LOG_LEVEL_INFO, "sin_lookup(theta) = %d", (int)sin_lookup(theta));
-//     APP_LOG(APP_LOG_LEVEL_INFO, "s_radius*sin_lookup(theta) = %d", (int)(s_radius*sin_lookup(theta)));
-//     APP_LOG(APP_LOG_LEVEL_INFO, "s_center.x + s_radius*sin_lookup(theta) = %d", (int)(s_center.x + s_radius*sin_lookup(theta)));
     
-    APP_LOG(APP_LOG_LEVEL_INFO, "sin_lookup(theta) = %d", (int)sin_lookup(theta));
-    APP_LOG(APP_LOG_LEVEL_INFO, "s_radius*sin_lookup(theta) = %d", (int)(s_radius*sin_lookup(theta)/ TRIG_MAX_RATIO));
-    APP_LOG(APP_LOG_LEVEL_INFO, "s_center.x + s_radius*sin_lookup(theta) = %d", (int)(s_center.x + s_radius*sin_lookup(theta)/ TRIG_MAX_RATIO));
+    APP_LOG(APP_LOG_LEVEL_INFO, "Drawing event #%d at x=%d; y=%d", index, secondHand.x, secondHand.y);
+    
+    APP_LOG(APP_LOG_LEVEL_INFO, "========================");
 
-//     (sin_lookup(second_angle) * secondHandLength / TRIG_MAX_RATIO) + center.x;
-//     int cor_x = s_center.x + s_radius*sin_lookup(theta);
-//     int cor_y = s_center.y + s_radius*cos_lookup(theta);
-    
-    
-    int cor_x = (int)(s_center.x + s_radius*sin_lookup(theta)/ TRIG_MAX_RATIO);
-    int cor_y = (int)(s_center.y + s_radius*cos_lookup(theta)/ TRIG_MAX_RATIO);
-    APP_LOG(APP_LOG_LEVEL_INFO, "Drawing event #%d at x=%d; y=%d", index, cor_x, cor_y);
-    
 //     int cor_x = s_center.x;
 //     int cor_y = s_center.y;
     
@@ -163,7 +171,7 @@ static void update_proc(Layer *layer, GContext *ctx) {
       
     //Create GBitmap, then set to created BitmapLayer
     s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
-    s_background_layer = bitmap_layer_create(GRect(cor_x, cor_y, IconSize, IconSize));
+    s_background_layer = bitmap_layer_create(GRect(secondHand.x, secondHand.y, IconSize, IconSize));
     bitmap_layer_set_bitmap(s_background_layer, s_background_bitmap);
     layer_add_child(s_canvas_layer, bitmap_layer_get_layer(s_background_layer));
     
