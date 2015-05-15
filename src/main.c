@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include "GCAppUtility.h"
 
 #define COLORS       true
 #define ANTIALIASING true
@@ -26,6 +27,9 @@ static bool s_animating = false;
 Time eventArray[200];
 static int currectCount = 0;
 static int totalCount = 0;
+
+static BitmapLayer *s_background_layer;
+static GBitmap *s_background_bitmap;
 
 /*************************** AnimationImplementation **************************/
 
@@ -80,19 +84,19 @@ static void update_proc(Layer *layer, GContext *ctx) {
     graphics_context_set_fill_color(ctx, GColorFromRGB(s_color_channels[0], s_color_channels[1], s_color_channels[2]));
     graphics_fill_rect(ctx, GRect(0, 0, 144, 168), 0, GCornerNone);
   }
-
-  graphics_context_set_stroke_color(ctx, GColorBlack);
-  graphics_context_set_stroke_width(ctx, 4);
-
+  
+  // General
   graphics_context_set_antialiased(ctx, ANTIALIASING);
 
-  // White clockface
+  // Draw White clockface
   graphics_context_set_fill_color(ctx, GColorWhite);
   graphics_fill_circle(ctx, s_center, s_radius);
-
+  
   // Draw outline
+  graphics_context_set_stroke_color(ctx, GColorLightGray);
+  graphics_context_set_stroke_width(ctx, 4);
   graphics_draw_circle(ctx, s_center, s_radius);
-
+  
   // Don't use current time while animating
   Time mode_time = (s_animating) ? s_anim_time : s_last_time;
 
@@ -118,6 +122,8 @@ static void update_proc(Layer *layer, GContext *ctx) {
   };
 
   // Draw hands with positive length only
+  graphics_context_set_stroke_color(ctx, GColorBlack);
+  graphics_context_set_stroke_width(ctx, 4);
   if(s_radius > 2 * HAND_MARGIN) {
     graphics_draw_line(ctx, s_center, hour_hand);
   } 
@@ -129,7 +135,11 @@ static void update_proc(Layer *layer, GContext *ctx) {
   for (int index = 0; index < totalCount; index++) {
     APP_LOG(APP_LOG_LEVEL_INFO, "Drawing event #%d", index); 
     
-    
+    //Create GBitmap, then set to created BitmapLayer
+    s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
+    s_background_layer = bitmap_layer_create(GRect(ScreenWidth/2, ScreenWidth/2, 20, 20));
+    bitmap_layer_set_bitmap(s_background_layer, s_background_bitmap);
+    layer_add_child(s_canvas_layer, bitmap_layer_get_layer(s_background_layer));
     
     
     
@@ -146,10 +156,17 @@ static void window_load(Window *window) {
   s_canvas_layer = layer_create(window_bounds);
   layer_set_update_proc(s_canvas_layer, update_proc);
   layer_add_child(window_layer, s_canvas_layer);
+  
 }
 
 static void window_unload(Window *window) {
   layer_destroy(s_canvas_layer);
+  
+  //Destroy GBitmap
+  gbitmap_destroy(s_background_bitmap);
+
+  //Destroy BitmapLayer
+  bitmap_layer_destroy(s_background_layer);
 }
 
 /*********************************** App **************************************/
