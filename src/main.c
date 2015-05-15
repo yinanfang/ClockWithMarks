@@ -135,9 +135,14 @@ static void update_proc(Layer *layer, GContext *ctx) {
   for (int index = 0; index < totalCount; index++) {
     APP_LOG(APP_LOG_LEVEL_INFO, "Drawing event #%d", index); 
     
+    int cor_x = s_center.x;
+    int cor_y = s_center.y;
+    
+    cor_x += s_radius - 15;
+      
     //Create GBitmap, then set to created BitmapLayer
     s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
-    s_background_layer = bitmap_layer_create(GRect(ScreenWidth/2, ScreenWidth/2, 20, 20));
+    s_background_layer = bitmap_layer_create(GRect(cor_x, cor_y, IconSize, IconSize));
     bitmap_layer_set_bitmap(s_background_layer, s_background_bitmap);
     layer_add_child(s_canvas_layer, bitmap_layer_get_layer(s_background_layer));
     
