@@ -28,6 +28,7 @@ Time eventArray[200];
 static int currectCount = 0;
 static int totalCount = 0;
 
+static int iconType = 0;
 static BitmapLayer *s_background_layer;
 static GBitmap *s_background_bitmap;
 
@@ -58,16 +59,20 @@ static void animate(int duration, int delay, AnimationImplementation *implementa
 
 /************************************ UI **************************************/
 
+static void updateBackgroudColor() {
+  for(int i = 0; i < 3; i++) {
+    s_color_channels[i] = rand() % 256;
+  }
+}
 static void tick_handler(struct tm *tick_time, TimeUnits changed) {
   // Store time
   s_last_time.hours = tick_time->tm_hour;
   s_last_time.hours -= (s_last_time.hours > 12) ? 12 : 0;
   s_last_time.minutes = tick_time->tm_min;
 
-  for(int i = 0; i < 3; i++) {
-    s_color_channels[i] = rand() % 256;
-  }
-
+  // Update background color
+  updateBackgroudColor();
+  
   // Redraw
   if(s_canvas_layer) {
     layer_mark_dirty(s_canvas_layer);
@@ -78,7 +83,53 @@ static int hours_to_minutes(int hours_out_of_12) {
   return (int)(float)(((float)hours_out_of_12 / 12.0F) * 60.0F);
 }
 
+#define IconType00  00
+#define IconType01  01
+#define IconType02  02
+
+static void drawEvents() {
+  // Choose corresponding icon
+  APP_LOG(APP_LOG_LEVEL_INFO, "Using icon type #%d", iconType);
+  switch(iconType) {
+      case IconType00:        
+        s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
+        break;
+      case IconType01:
+        s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
+        break;
+      case IconType02:
+        s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
+        break;
+      default:
+        s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
+        break;
+    }
+  
+  // Draw all events
+  for (int index = 0; index < totalCount; index++) {
+    APP_LOG(APP_LOG_LEVEL_INFO, "Drawing event #%d with hour=%d; min=%d", index, eventArray[index].hours, eventArray[index].minutes);
+
+    // Get angle of event on clock
+    GPoint iconPosition;
+    GPoint center = s_center;
+    int32_t radius = s_radius;
+    int32_t second_angle = eventArray[index].hours*TRIG_MAX_ANGLE/12 + eventArray[index].minutes*TRIG_MAX_ANGLE/60/12;
+    iconPosition.y = (-cos_lookup(second_angle) * radius / TRIG_MAX_RATIO) + center.y - IconSize/2;
+    iconPosition.x = (sin_lookup(second_angle) * radius / TRIG_MAX_RATIO) + center.x - IconSize/2;
+    APP_LOG(APP_LOG_LEVEL_INFO, "Drawing event #%d with hour=%d; min=%d at x=%d; y=%d", index, eventArray[index].hours, eventArray[index].minutes, iconPosition.x, iconPosition.y);
+    
+    //Create GBitmap, then set to created BitmapLayer
+//     s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
+    s_background_layer = bitmap_layer_create(GRect(iconPosition.x, iconPosition.y, IconSize, IconSize));
+    bitmap_layer_set_bitmap(s_background_layer, s_background_bitmap);
+    layer_add_child(s_canvas_layer, bitmap_layer_get_layer(s_background_layer));
+    
+    currectCount++;
+  }
+}
+
 static void update_proc(Layer *layer, GContext *ctx) {
+  
   // Color background?
   if(COLORS) {
     graphics_context_set_fill_color(ctx, GColorFromRGB(s_color_channels[0], s_color_channels[1], s_color_channels[2]));
@@ -132,53 +183,7 @@ static void update_proc(Layer *layer, GContext *ctx) {
   }
   
   // Draw events 
-  for (int index = 0; index < totalCount; index++) {
-    APP_LOG(APP_LOG_LEVEL_INFO, "Drawing event #%d with hour=%d; min=%d", index, eventArray[index].hours, eventArray[index].minutes);
-
-    // Get angle of event on clock
-    int theta = eventArray[index].hours*360/12 + eventArray[index].minutes*360/60/12;
-//     APP_LOG(APP_LOG_LEVEL_INFO, "-->theta = %d; s_radius = %d;, s_center.x = %d, s_center.y = %d, TRIG_MAX_RATIO = %d", theta, s_radius, s_center.x, s_center.y, TRIG_MAX_RATIO);
-//     APP_LOG(APP_LOG_LEVEL_INFO, "=====");
-//     APP_LOG(APP_LOG_LEVEL_INFO, "-->sin_lookup(theta) = %d", (int)sin_lookup(theta));
-//     APP_LOG(APP_LOG_LEVEL_INFO, "-->s_radius*sin_lookup(theta) = %d", (int)(s_radius*sin_lookup(theta)/ TRIG_MAX_RATIO));
-//     APP_LOG(APP_LOG_LEVEL_INFO, "-->s_center.x + s_radius*sin_lookup(theta) = %d", (int)(s_center.x + s_radius*sin_lookup(theta)/ TRIG_MAX_RATIO));
-//     APP_LOG(APP_LOG_LEVEL_INFO, "=====");
-//     APP_LOG(APP_LOG_LEVEL_INFO, "-->cos_lookup(theta) = %d", (int)cos_lookup(theta));
-//     APP_LOG(APP_LOG_LEVEL_INFO, "-->s_radius*cos_lookup(theta) = %d", (int)(s_radius*cos_lookup(theta)/ TRIG_MAX_RATIO));
-//     APP_LOG(APP_LOG_LEVEL_INFO, "-->s_center.x + s_radius*cos_lookup(theta) = %d", (int)(s_center.x + s_radius*cos_lookup(theta)/ TRIG_MAX_RATIO));
-//     APP_LOG(APP_LOG_LEVEL_INFO, "=====");
-//     int cor_x = (int)(s_center.x + s_radius*sin_lookup(theta)/ TRIG_MAX_RATIO);
-//     int cor_y = (int)(s_center.y + s_radius*cos_lookup(theta)/ TRIG_MAX_RATIO);
-    
-    GPoint secondHand;
-    GPoint center = s_center;
-    int32_t secondHandLength = s_radius;
-    int32_t second_angle = eventArray[index].hours*TRIG_MAX_ANGLE/12 + eventArray[index].minutes*TRIG_MAX_ANGLE/60/12;
-      
-//       TRIG_MAX_ANGLE * t.tm_sec / 60;
-    secondHand.y = (-cos_lookup(second_angle) * secondHandLength / TRIG_MAX_RATIO) + center.y - IconSize/2;
-    secondHand.x = (sin_lookup(second_angle) * secondHandLength / TRIG_MAX_RATIO) + center.x - IconSize/2;
-
-    
-    APP_LOG(APP_LOG_LEVEL_INFO, "Drawing event #%d at x=%d; y=%d", index, secondHand.x, secondHand.y);
-    
-    APP_LOG(APP_LOG_LEVEL_INFO, "========================");
-
-//     int cor_x = s_center.x;
-//     int cor_y = s_center.y;
-    
-//     cor_x += s_radius - 15;
-      
-    //Create GBitmap, then set to created BitmapLayer
-    s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
-    s_background_layer = bitmap_layer_create(GRect(secondHand.x, secondHand.y, IconSize, IconSize));
-    bitmap_layer_set_bitmap(s_background_layer, s_background_bitmap);
-    layer_add_child(s_canvas_layer, bitmap_layer_get_layer(s_background_layer));
-    
-    
-    
-    currectCount++;
-  }
+  drawEvents();
 }
 
 static void window_load(Window *window) {
@@ -223,6 +228,7 @@ static void hands_update(Animation *anim, AnimationProgress dist_normalized) {
 }
 
 #define Code_Reset      0
+#define Code_IconType   1
 #define Code_Hour       101
 #define Code_Minute     102
 #define Code_End        999
@@ -250,6 +256,9 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
         currectCount = 0;
         totalCount = 0;
         break;
+      case Code_IconType:
+        iconType = (int)t->value->int32;
+        break;
       case Code_Hour:
         event.hours = (int)t->value->int32;
         snprintf(hour_buffer, sizeof(hour_buffer), "%d hour", event.hours);
@@ -263,6 +272,8 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
       case Code_End:
         isEventObject = false;
         APP_LOG(APP_LOG_LEVEL_INFO, "Got all event info!");
+        // Update background color
+        updateBackgroudColor();
         // Redraw
         if(s_canvas_layer) {
           layer_mark_dirty(s_canvas_layer);
