@@ -83,21 +83,25 @@ static int hours_to_minutes(int hours_out_of_12) {
   return (int)(float)(((float)hours_out_of_12 / 12.0F) * 60.0F);
 }
 
-#define IconType00  00
-#define IconType01  01
-#define IconType02  02
+#define IconType1  1
+#define IconType2  2
+#define IconType3  3
+#define IconType4  4
+
 
 static void drawEvents() {
   // Choose corresponding icon
-  APP_LOG(APP_LOG_LEVEL_INFO, "Using icon type #%d", iconType);
   switch(iconType) {
-      case IconType00:        
+      case IconType1:        
         s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
         break;
-      case IconType01:
+      case IconType2:
         s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
         break;
-      case IconType02:
+      case IconType3:
+        s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
+        break;
+      case IconType4:
         s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
         break;
       default:
@@ -107,8 +111,6 @@ static void drawEvents() {
   
   // Draw all events
   for (int index = 0; index < totalCount; index++) {
-    APP_LOG(APP_LOG_LEVEL_INFO, "Drawing event #%d with hour=%d; min=%d", index, eventArray[index].hours, eventArray[index].minutes);
-
     // Get angle of event on clock
     GPoint iconPosition;
     GPoint center = s_center;
@@ -116,7 +118,7 @@ static void drawEvents() {
     int32_t second_angle = eventArray[index].hours*TRIG_MAX_ANGLE/12 + eventArray[index].minutes*TRIG_MAX_ANGLE/60/12;
     iconPosition.y = (-cos_lookup(second_angle) * radius / TRIG_MAX_RATIO) + center.y - IconSize/2;
     iconPosition.x = (sin_lookup(second_angle) * radius / TRIG_MAX_RATIO) + center.x - IconSize/2;
-    APP_LOG(APP_LOG_LEVEL_INFO, "Drawing event #%d with hour=%d; min=%d at x=%d; y=%d", index, eventArray[index].hours, eventArray[index].minutes, iconPosition.x, iconPosition.y);
+    APP_LOG(APP_LOG_LEVEL_INFO, "Drawing event #%d with hour=%d; min=%d; iconType=#%d at x=%d; y=%d", index, eventArray[index].hours, eventArray[index].minutes, iconType, iconPosition.x, iconPosition.y);
     
     //Create GBitmap, then set to created BitmapLayer
 //     s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
@@ -184,6 +186,8 @@ static void update_proc(Layer *layer, GContext *ctx) {
   
   // Draw events 
   drawEvents();
+  APP_LOG(APP_LOG_LEVEL_INFO, "========== Draw finished! ==========");
+
 }
 
 static void window_load(Window *window) {
