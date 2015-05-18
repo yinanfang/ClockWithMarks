@@ -93,19 +93,19 @@ static void drawEvents() {
   // Choose corresponding icon
   switch(iconType) {
       case IconType1:        
-        s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
+        s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_ICON01);
         break;
       case IconType2:
-        s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
+        s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_ICON02);
         break;
       case IconType3:
-        s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
+        s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_ICON03);
         break;
       case IconType4:
-        s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
+        s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_ICON04);
         break;
       default:
-        s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
+        s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_ICON01);
         break;
     }
   
@@ -124,6 +124,7 @@ static void drawEvents() {
 //     s_background_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND);
     s_background_layer = bitmap_layer_create(GRect(iconPosition.x, iconPosition.y, IconSize, IconSize));
     bitmap_layer_set_bitmap(s_background_layer, s_background_bitmap);
+//     bitmap_layer_set_compositing_mode(s_background_layer, GCompOpSet);
     layer_add_child(s_canvas_layer, bitmap_layer_get_layer(s_background_layer));
     
     currectCount++;

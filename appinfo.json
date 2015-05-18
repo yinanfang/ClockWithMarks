@@ -11,8 +11,23 @@
     "resources": {
         "media": [
             {
+                "file": "images/icon04.png",
+                "name": "ICON04",
+                "type": "png"
+            },
+            {
+                "file": "images/icon03.png",
+                "name": "ICON03",
+                "type": "png"
+            },
+            {
                 "file": "images/icon01.png",
-                "name": "IMAGE_BACKGROUND",
+                "name": "ICON01",
+                "type": "png"
+            },
+            {
+                "file": "images/icon02.png",
+                "name": "ICON02",
                 "type": "png"
             }
         ]
